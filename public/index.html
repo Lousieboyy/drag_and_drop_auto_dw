@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>drag-and-drop_auto_downloader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      :root {
+        --bg: #0f172a;
+        --bg-alt: #020617;
+        --accent: #38bdf8;
+        --accent-soft: rgba(56, 189, 248, 0.15);
+        --accent-strong: rgba(56, 189, 248, 0.35);
+        --text: #e5e7eb;
+        --text-muted: #9ca3af;
+        --error: #f97373;
+        --success: #4ade80;
+        --border-radius: 16px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+          sans-serif;
+        background: radial-gradient(circle at top, #1e293b, #020617 55%);
+        color: var(--text);
+      }
+
+      .app {
+        width: 100%;
+        max-width: 720px;
+        padding: 24px;
+      }
+
+      .card {
+        background: linear-gradient(
+          145deg,
+          rgba(15, 23, 42, 0.95),
+          rgba(15, 23, 42, 0.8)
+        );
+        border-radius: 24px;
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        box-shadow:
+          0 24px 60px rgba(15, 23, 42, 0.9),
+          0 0 0 1px rgba(15, 23, 42, 0.9);
+        padding: 28px 28px 24px;
+        backdrop-filter: blur(18px);
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+
+      .subtitle {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+      }
+
+      .pill {
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .pill-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.3);
+      }
+
+      .drop-zone {
+        position: relative;
+        border-radius: var(--border-radius);
+        border: 1px dashed rgba(148, 163, 184, 0.8);
+        background:
+          radial-gradient(circle at top left, var(--accent-soft), transparent),
+          radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.05), transparent),
+          rgba(15, 23, 42, 0.9);
+        padding: 40px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        text-align: center;
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease,
+          background 0.2s ease,
+          transform 0.15s ease;
+        cursor: copy;
+      }
+
+      .drop-zone.drag-over {
+        border-color: var(--accent);
+        box-shadow:
+          0 0 0 1px var(--accent-strong),
+          0 18px 45px rgba(15, 23, 42, 0.9);
+        background:
+          radial-gradient(circle at top left, var(--accent-strong), transparent),
+          radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.08), transparent),
+          rgba(15, 23, 42, 0.98);
+        transform: translateY(-1px);
+      }
+
+      .drop-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        background: radial-gradient(circle at top, #1e293b, #020617);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .drop-icon::before {
+        content: '';
+        position: absolute;
+        inset: -40%;
+        background: conic-gradient(
+          from 180deg,
+          rgba(56, 189, 248, 0.1),
+          transparent,
+          transparent,
+          rgba(56, 189, 248, 0.35),
+          transparent
+        );
+        opacity: 0.6;
+      }
+
+      .drop-icon-inner {
+        position: relative;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .drop-icon-inner span {
+        font-size: 1.5rem;
+      }
+
+      .drop-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+      }
+
+      .drop-hint {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+      }
+
+      .status {
+        margin-top: 16px;
+        min-height: 22px;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .status-message {
+        color: var(--text-muted);
+      }
+
+      .status-message.success {
+        color: var(--success);
+      }
+
+      .status-message.error {
+        color: var(--error);
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+      }
+
+      .status-dot.idle {
+        background: rgba(148, 163, 184, 0.7);
+      }
+
+      .status-dot.loading {
+        background: var(--accent);
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.5);
+        animation: pulse 1.2s ease-in-out infinite;
+      }
+
+      .status-dot.success {
+        background: var(--success);
+        box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.4);
+      }
+
+      .status-dot.error {
+        background: var(--error);
+        box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.4);
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        60% {
+          transform: scale(1.2);
+          opacity: 0.3;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .tip {
+        margin-top: 10px;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
+
+      @media (max-width: 600px) {
+        .card {
+          padding: 20px 18px 18px;
+        }
+
+        .drop-zone {
+          padding: 28px 18px;
+        }
+
+        .title {
+          font-size: 1.05rem;
+        }
+
+        .subtitle {
+          font-size: 0.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="card">
+        <div class="header">
+          <div>
+            <div class="title">drag-and-drop_auto_downloader</div>
+            <div class="subtitle">
+              Drop an image here and the server will download, convert to PNG,
+              and store it in your local <code>dataset</code> folder.
+            </div>
+          </div>
+          <div class="pill">
+            <span class="pill-dot"></span>
+            <span>Local only · PNG</span>
+          </div>
+        </div>
+
+        <div id="drop-zone" class="drop-zone">
+          <div class="drop-icon">
+            <div class="drop-icon-inner">
+              <span>⇣</span>
+            </div>
+          </div>
+          <div class="drop-title">Drop images here</div>
+          <div class="drop-hint">
+            From another browser tab: drag the image itself or an image link.
+          </div>
+        </div>
+
+        <div class="status">
+          <div id="status-dot" class="status-dot idle"></div>
+          <div id="status-message" class="status-message">
+            Waiting for image drop or URL.
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <label
+            for="url-input"
+            style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px;"
+          >
+            Or paste an image URL
+          </label>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <input
+              id="folder-input"
+              type="text"
+              placeholder="Optional folder name, e.g. cats, dogs/run1"
+              spellcheck="false"
+              style="
+                width: 100%;
+                padding: 7px 10px;
+                border-radius: 999px;
+                border: 1px solid rgba(148, 163, 184, 0.5);
+                background: rgba(15, 23, 42, 0.9);
+                color: var(--text);
+                font-size: 0.8rem;
+                outline: none;
+              "
+            />
+
+            <input
+              id="url-input"
+              type="text"
+              placeholder="https://example.com/image.jpg"
+              spellcheck="false"
+              style="
+                flex: 1;
+                padding: 8px 10px;
+                border-radius: 999px;
+                border: 1px solid rgba(148, 163, 184, 0.6);
+                background: rgba(15, 23, 42, 0.9);
+                color: var(--text);
+                font-size: 0.8rem;
+                outline: none;
+              "
+            />
+            <button
+              id="url-submit"
+              type="button"
+              style="
+                padding: 8px 14px;
+                border-radius: 999px;
+                border: none;
+                background: var(--accent);
+                color: #0b1120;
+                font-size: 0.8rem;
+                font-weight: 500;
+                cursor: pointer;
+                white-space: nowrap;
+              "
+            >
+              Save URL
+            </button>
+          </div>
+        </div>
+
+        <div class="tip">
+          Images are stored under <code>./dataset</code> from where you run the
+          server.
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const dropZone = document.getElementById('drop-zone');
+      const statusDot = document.getElementById('status-dot');
+      const statusMessage = document.getElementById('status-message');
+      const urlInput = document.getElementById('url-input');
+      const urlSubmit = document.getElementById('url-submit');
+      const folderInput = document.getElementById('folder-input');
+
+      const setStatus = (mode, message) => {
+        statusDot.className = 'status-dot ' + mode;
+        statusMessage.className = 'status-message' + (mode === 'success'
+          ? ' success'
+          : mode === 'error'
+            ? ' error'
+            : '');
+        statusMessage.textContent = message;
+      };
+
+      const extractUrlFromDataTransfer = (event) => {
+        const dt = event.dataTransfer;
+
+        if (!dt) return null;
+
+        // Try text/uri-list first
+        try {
+          const uriList = dt.getData('text/uri-list');
+          if (uriList) {
+            // text/uri-list can contain comments, take first non-empty line
+            const line = uriList
+              .split('\\n')
+              .map((l) => l.trim())
+              .find((l) => l && !l.startsWith('#'));
+            if (line) return line;
+          }
+        } catch (_) {}
+
+        // Fallback to plain text
+        try {
+          const text = dt.getData('text/plain');
+          const trimmed = text && text.trim();
+          if (trimmed && (trimmed.startsWith('http://') || trimmed.startsWith('https://'))) {
+            return trimmed;
+          }
+        } catch (_) {}
+
+        // Check items (e.g., dragging an <img> element)
+        if (dt.items && dt.items.length) {
+          for (const item of dt.items) {
+            if (item.kind === 'string') {
+              if (item.type === 'text/uri-list' || item.type === 'text/plain') {
+                const tmp = dt.getData(item.type);
+                const trimmed = tmp && tmp.trim();
+                if (trimmed && (trimmed.startsWith('http://') || trimmed.startsWith('https://'))) {
+                  return trimmed;
+                }
+              }
+            }
+          }
+        }
+
+        return null;
+      };
+
+      const sendUrlToServer = async (url) => {
+        if (!url || !url.trim()) {
+          setStatus('error', 'Please enter an image URL.');
+          return;
+        }
+
+        const trimmed = url.trim();
+        if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+          setStatus('error', 'Only HTTP/HTTPS URLs are supported.');
+          return;
+        }
+
+        const folderValue = folderInput && folderInput.value
+          ? folderInput.value.trim()
+          : '';
+
+        setStatus('loading', 'Saving image to dataset...');
+
+        try {
+          const response = await fetch('/api/save-image', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url, folder: folderValue || undefined }),
+          });
+
+          const data = await response.json().catch(() => ({}));
+
+          if (!response.ok || !data.success) {
+            const message =
+              data && data.error
+                ? data.error
+                : 'Server returned an error while saving the image.';
+            setStatus('error', message);
+            return;
+          }
+
+          const filename = data.filename || 'image.png';
+          const folder = data.folder || '';
+          const locationText = folder
+            ? `dataset/${folder}`
+            : 'dataset';
+          setStatus('success', `Saved as ${filename} in ${locationText}.`);
+
+          setTimeout(() => {
+            setStatus('idle', 'Ready for the next image.');
+          }, 2500);
+        } catch (err) {
+          setStatus(
+            'error',
+            'Network error while talking to the local server.'
+          );
+        }
+      };
+
+      const handleDrop = async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        dropZone.classList.remove('drag-over');
+
+        const url = extractUrlFromDataTransfer(event);
+        if (!url) {
+          setStatus(
+            'error',
+            'No URL found in drop. Try dragging the image itself or its link.'
+          );
+          return;
+        }
+
+        await sendUrlToServer(url);
+      };
+
+      const handleDragOver = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        event.dataTransfer.dropEffect = 'copy';
+        dropZone.classList.add('drag-over');
+      };
+
+      const handleDragLeave = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (event.target === dropZone) {
+          dropZone.classList.remove('drag-over');
+        }
+      };
+
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((eventName) => {
+        document.addEventListener(eventName, (e) => {
+          if (e.target !== dropZone && !dropZone.contains(e.target)) {
+            if (eventName === 'dragover' || eventName === 'dragenter') {
+              e.preventDefault();
+            }
+          }
+        });
+      });
+
+      dropZone.addEventListener('dragover', handleDragOver);
+      dropZone.addEventListener('dragenter', handleDragOver);
+      dropZone.addEventListener('dragleave', handleDragLeave);
+      dropZone.addEventListener('drop', handleDrop);
+
+      if (urlSubmit && urlInput) {
+        urlSubmit.addEventListener('click', () => {
+          sendUrlToServer(urlInput.value);
+        });
+
+        urlInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            sendUrlToServer(urlInput.value);
+          }
+        });
+      }
+    </script>
+  </body>
+  </html>
+
