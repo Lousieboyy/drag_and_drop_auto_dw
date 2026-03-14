@@ -8,7 +8,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const DATASET_DIR = path.join(__dirname, 'dataset');
+const DATASET_DIR = 'C:\\Users\\User\\smart_city_citizen_reporting_app\\ai_backend\\ai_data';
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
 // Ensure dataset directory exists

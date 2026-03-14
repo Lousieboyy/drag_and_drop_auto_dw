@@ -275,13 +275,40 @@
           <div>
             <div class="title">drag-and-drop_auto_downloader</div>
             <div class="subtitle">
-              Drop an image here and the server will download, convert to PNG,
-              and store it in your local <code>dataset</code> folder.
+              Drop an image here and the server will download, convert to PNG
             </div>
           </div>
           <div class="pill">
             <span class="pill-dot"></span>
             <span>Local only · PNG</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <label
+            for="url-input"
+            style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px;"
+          >
+            Choose folder & paste image URL
+          </label>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <input
+              id="folder-input"
+              type="text"
+              placeholder="Folder name (required before dropping), e.g. waste, drainage, cats"
+              spellcheck="false"
+              style="
+                width: 100%;
+                padding: 7px 10px;
+                margin-bottom: 10px;
+                border-radius: 999px;
+                border: 1px solid rgba(148, 163, 184, 0.5);
+                background: rgba(15, 23, 42, 0.9);
+                color: var(--text);
+                font-size: 0.8rem;
+                outline: none;
+              "
+            />
           </div>
         </div>
 
@@ -300,74 +327,8 @@
         <div class="status">
           <div id="status-dot" class="status-dot idle"></div>
           <div id="status-message" class="status-message">
-            Waiting for image drop or URL.
+            Waiting for folder, then image drop or URL.
           </div>
-        </div>
-
-        <div style="margin-top: 14px;">
-          <label
-            for="url-input"
-            style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px;"
-          >
-            Or paste an image URL
-          </label>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <input
-              id="folder-input"
-              type="text"
-              placeholder="Optional folder name, e.g. cats, dogs/run1"
-              spellcheck="false"
-              style="
-                width: 100%;
-                padding: 7px 10px;
-                border-radius: 999px;
-                border: 1px solid rgba(148, 163, 184, 0.5);
-                background: rgba(15, 23, 42, 0.9);
-                color: var(--text);
-                font-size: 0.8rem;
-                outline: none;
-              "
-            />
-
-            <input
-              id="url-input"
-              type="text"
-              placeholder="https://example.com/image.jpg"
-              spellcheck="false"
-              style="
-                flex: 1;
-                padding: 8px 10px;
-                border-radius: 999px;
-                border: 1px solid rgba(148, 163, 184, 0.6);
-                background: rgba(15, 23, 42, 0.9);
-                color: var(--text);
-                font-size: 0.8rem;
-                outline: none;
-              "
-            />
-            <button
-              id="url-submit"
-              type="button"
-              style="
-                padding: 8px 14px;
-                border-radius: 999px;
-                border: none;
-                background: var(--accent);
-                color: #0b1120;
-                font-size: 0.8rem;
-                font-weight: 500;
-                cursor: pointer;
-                white-space: nowrap;
-              "
-            >
-              Save URL
-            </button>
-          </div>
-        </div>
-
-        <div class="tip">
-          Images are stored under <code>./dataset</code> from where you run the
-          server.
         </div>
       </div>
     </div>
@@ -476,8 +437,8 @@
           const filename = data.filename || 'image.png';
           const folder = data.folder || '';
           const locationText = folder
-            ? `dataset/${folder}`
-            : 'dataset';
+            ? `ai_backend\\ai_data\\${folder}`
+            : 'ai_backend\\ai_data';
           setStatus('success', `Saved as ${filename} in ${locationText}.`);
 
           setTimeout(() => {
