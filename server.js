@@ -68,33 +68,7 @@ app.post('/api/save-image', async (req, res) => {
     });
   }
 
-  const baseIsWaste =
-    targetFolder && targetFolder.toLowerCase() === 'waste';
-
-  let filename;
-  if (baseIsWaste) {
-    let nextIndex = 1;
-    try {
-      const files = await fs.promises.readdir(targetDir);
-      const indices = files
-        .map((name) => {
-          const match = name.match(/^waste(\d*)\.png$/i);
-          if (!match) return null;
-          if (!match[1]) return 1;
-          const n = parseInt(match[1], 10);
-          return Number.isNaN(n) ? null : n;
-        })
-        .filter((n) => n !== null);
-      const maxExisting = indices.length ? Math.max(...indices) : 0;
-      nextIndex = maxExisting + 1;
-    } catch {
-      // if reading the directory fails, just start from 1
-      nextIndex = 1;
-    }
-    filename = `waste${nextIndex}.png`;
-  } else {
-    filename = `image-${Date.now()}-${Math.floor(Math.random() * 1e6)}.png`;
-  }
+  const filename = `image-${Date.now()}-${Math.floor(Math.random() * 1e6)}.png`;
   const filePath = path.join(targetDir, filename);
 
   try {
